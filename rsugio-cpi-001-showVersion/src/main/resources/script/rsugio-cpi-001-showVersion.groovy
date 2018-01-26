@@ -1,5 +1,20 @@
 import com.sap.gateway.ip.core.customdev.util.Message as CpiMsg
 
+/**
+ * When your IFlow gets running in CPI environment, you are in need of detecting some parameters.
+ * Here below is the code for system environment reporting.
+ *
+ * @author Iliya Kuznetsov <iliya.kuznetsov@gmail.com>
+ * @version 1.0.1
+ * @date 2018-01-26
+ */
+
+/**
+ * Show version and environment information; just plain text and human readable
+ *
+ * @param msg Incoming message (not used)
+ * @return Outgoing message with plain text
+ */
 CpiMsg r001showVersion(CpiMsg msg) {
 	Map<String,Object> ps = msg.properties
 	org.apache.camel.Exchange camelExch = msg.exchange
@@ -13,7 +28,10 @@ CpiMsg r001showVersion(CpiMsg msg) {
 		if (b.symbolicName.startsWith('org.apache.http')) a << "\n$b.symbolicName:\t$b.version"
 	}
 
-	def log = "\u0474\u2697"*50<<""
+	def log = "\u0474\u2697"*20<<""
+	log << "\n@author Iliya Kuznetsov"
+	log << "\n@version 1.0.1\n@date 2018-01-26"
+	log << "\n@see https://github.com/rsugio/cpi/tree/master/rsugio-cpi-001-showVersion\n"
     log << "\nJava version:\t${System.properties['java.version']}"
     log << "\nGroovy version:\t${GroovySystem.version}"
 	log << "\nCamel version:\t$camelCtx.version"
