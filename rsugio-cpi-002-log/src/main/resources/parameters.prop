@@ -1,0 +1,6 @@
+#Parameter data and values
+#Fri Jan 26 23:51:24 SAMT 2018
+Directory_Sftp=/outgoing/cpi
+Credential_Sftp=i340156_p002
+Endpoint_Postman=/rsugio-cpi/002-log
+Host_Sftp=sftp18.sapsf.com
