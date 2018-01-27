@@ -5,6 +5,12 @@
 *.log
 
 bin/
+.idea/
+.gradle/
+
+
+# Secure
+*.secure
 
 # Package Files #
 *.jar
