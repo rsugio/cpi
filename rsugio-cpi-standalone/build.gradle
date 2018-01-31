@@ -1,3 +1,6 @@
+
+//Typical build.gradle for SAP CPI 2.36.x same version libraries
+
 group 'io.rsug.cpi'
 version '1.0-SNAPSHOT'
 
@@ -17,6 +20,7 @@ dependencies {
     compile 'org.apache.httpcomponents:httpcore:4.1.4'
     compile 'com.jcraft:jsch:0.1.54'
     compile 'org.apache.camel:camel-core:2.17.4'
+    compile group: 'commons-io', name: 'commons-io', version: '2.4'
 
     testCompile group: 'junit', name: 'junit', version: '4.+'
 }

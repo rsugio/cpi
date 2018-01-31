@@ -6,11 +6,8 @@
  * @date 2018-01-27
  * @see https://github.com/rsugio/cpi/tree/master/rsugio-cpi-002-log
  */
-import com.sap.gateway.ip.core.customdev.util.Message as CpiMsg
-import com.jcraft.jsch.JSch
 
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
+import com.sap.gateway.ip.core.customdev.util.Message as CpiMsg
 
 import com.sap.it.api.ITApiFactory
 import com.sap.it.spi.ITApiHandler
@@ -19,72 +16,48 @@ import com.sap.it.api.securestore.UserCredential
 import com.sap.it.api.securestore.exception.SecureStoreException
 import com.sap.it.api.keystore.KeystoreService
 import com.sap.it.api.keystore.exception.KeystoreException
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 
-class Rsugio002logger {
-          
-          
-}
-
-
-CpiMsg log002init(CpiMsg msg) {
-	List any = ['1', '2', '3', '4', '5']
-	String content = "1234"*20+"\n"*10+"..."
-	
-	msg.properties.logs = [:]
-	any.each{
-	    msg.properties.logs[it] = content
-	}
+CpiMsg mplDemo(CpiMsg msg) {
+	def mpl = messageLogFactory.getMessageLog(msg)
+	mpl.addAttachmentAsString("attachment1", "1234567890\n"*30+"."*30, "text/plain")
+	mpl.addAttachmentAsString("attachment2", "<a><b c='1'><![CDATA[ text here ]]><!-- comment --></b></a>", "application/xml")
+	throw new javax.script.ScriptException("Modelled exception thrown by us, at function mplDemo(msg)")
 	msg
 }
 
-CpiMsg p002makeZip(CpiMsg msg) {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream()
-    ZipOutputStream zos = new ZipOutputStream(baos)
-    PrintWriter pw = new PrintWriter(zos)
-    msg.properties.logs.each{String k, String v ->
-        ZipEntry ze = new ZipEntry("${k}.txt")
-        zos.putNextEntry(ze)
-        pw.println(v)
-        pw.flush()
-        zos.closeEntry()
+CpiMsg mplCatch(CpiMsg msg) {
+	def mpl = messageLogFactory.getMessageLog(msg)
+	Exception e = msg.properties.CamelExceptionCaught
+	String xlog = "$e"
+	mpl.addAttachmentAsString("exception", xlog, "text/plain")
+	msg.setBody(xlog)
+	msg
+}
+
+CpiMsg customModel(CpiMsg msg) {
+	com.sap.it.api.securestore.UserCredential cred = ITApiFactory.getApi(SecureStoreService.class, null).getUserCredential(msg.properties.Credential_Sftp)
+
+	Object log002 = msg.properties.log002
+	log002.connectSftp(msg.properties.Host_Sftp, cred, false)
+
+	log002.mkdirCdSftp('/outgoing/cpi/custom-test')
+	log002.putSftp("azaza.txt", "1\n2\n3\n"*100, true)
+
+	Path x = log002.createTempFile("1_.txt")
+    OutputStream w = Files.newOutputStream(x)
+    String b = " " * 11
+    (1..1).each{
+        w.write(b.getBytes())
     }
-    pw.close()
-    zos.close()
-    baos.close()
-    msg.setBody(baos.toByteArray())
-    
-    String tn = System.properties['com.sap.it.node.tenant.name']
-    org.apache.camel.Exchange camelExch = msg.exchange
-    org.apache.camel.CamelContext camelCtx = camelExch.getContext()
-    String iflowId = camelCtx.name
-    String ts = msg.properties.CamelCreatedTimestamp.format("yyyy-MM-dd'T'HH_mm_ssZZZ", TimeZone.getTimeZone("Europe/Moscow"))
-    String fn = "/outgoing/${tn}_${iflowId}_${ts}_.zip"
-    msg.setHeader('CamelFileName', fn)
-    msg
-}
-
-CpiMsg p002manual(CpiMsg msg) {
-    def mpl = messageLogFactory.getMessageLog(msg)
-    
-    def service = ITApiFactory.getApi(SecureStoreService.class, null)
-    com.sap.it.api.securestore.UserCredential cred = service.getUserCredential(msg.properties.Credential_Sftp)
-    String host_sftp = msg.properties.Host_Sftp
-    
-    com.jcraft.jsch.JSch jsch=new com.jcraft.jsch.JSch()
-    com.jcraft.jsch.Session session = jsch.getSession(cred.username, host_sftp)
-    session.setPassword(new String(cred.password))
-    session.setConfig("StrictHostKeyChecking", "no")
-    session.connect()
-
-    com.jcraft.jsch.Channel sftpc = session.openChannel("sftp")
-    sftpc.connect()
-    com.jcraft.jsch.ChannelSftp sftp = (com.jcraft.jsch.ChannelSftp)sftpc
-    String fn = msg.getHeader("CamelFileName", String)
-    assert fn : "CamelFileName has to be set before"
-    sftp.put(msg.getBody(InputStream), fn)
-    sftp.disconnect()
-    session.disconnect()
+    w.close()
+//    log002.tempToArchive("azaza_1234567.zip")
+//	log002.disconnect()
 	msg
 }
 
- 
+CpiMsg customCatch(CpiMsg msg) {
+	msg
+}
