@@ -1,4 +1,6 @@
 import com.sap.gateway.ip.core.customdev.util.Message as CpiMsg
+import groovy.transform.TypeChecked
+import groovy.transform.TypeCheckingMode
 
 /**
  * When your IFlow gets running in CPI environment, you are in need of detecting some parameters.
@@ -30,7 +32,7 @@ CpiMsg r001showVersion(CpiMsg msg) {
 
 	def log = "\u0474\u2697"*20<<""
 	log << "\n@author Iliya Kuznetsov"
-	log << "\n@version 1.0.1\n@date 2018-01-26"
+	log << "\n@version 1.0.2\n@date 2018-01-31"
 	log << "\n@see https://github.com/rsugio/cpi/tree/master/rsugio-cpi-001-showVersion\n"
     log << "\nJava version:\t${System.properties['java.version']}"
     log << "\nGroovy version:\t${GroovySystem.version}"
@@ -99,3 +101,18 @@ CpiMsg r001showVersion(CpiMsg msg) {
 	msg
 }
 
+CpiMsg r001showVersionReflection(CpiMsg msg) {
+	def log = "\u0474\u2697"*20<<""
+	log << "\n@author Iliya Kuznetsov"
+	log << "\n@version 1.0.2\n@date 2018-01-31"
+	log << "\n@see https://github.com/rsugio/cpi/tree/master/rsugio-cpi-001-showVersion\n"
+    log << "\nJava version:\t${System.properties['java.version']}"
+    log << "\nGroovy version:\t${GroovySystem.version}"
+//	log << "\nCamel version:\t$camelCtx.version"
+//	log << "\nCamel uptime:\t$camelCtx.uptime"
+//	log << "\nIFLMAP node:\t$iflmapNode"
+
+	msg.setBody(log as String)
+	msg.setHeader('Content-Type', 'text/plain;charset=UTF-8')
+	msg
+}
