@@ -37,27 +37,15 @@ CpiMsg mplCatch(CpiMsg msg) {
 	msg
 }
 
-CpiMsg customModel(CpiMsg msg) {
-	com.sap.it.api.securestore.UserCredential cred = ITApiFactory.getApi(SecureStoreService.class, null).getUserCredential(msg.properties.Credential_Sftp)
-
-	Object log002 = msg.properties.log002
-	log002.connectSftp(msg.properties.Host_Sftp, cred, false)
-
-	log002.mkdirCdSftp('/outgoing/cpi/custom-test')
-	log002.putSftp("azaza.txt", "1\n2\n3\n"*100, true)
-
-	Path x = log002.createTempFile("1_.txt")
-    OutputStream w = Files.newOutputStream(x)
-    String b = " " * 11
-    (1..1).each{
-        w.write(b.getBytes())
-    }
-    w.close()
-//    log002.tempToArchive("azaza_1234567.zip")
-//	log002.disconnect()
+CpiMsg bus1(CpiMsg msg) {
 	msg
 }
 
-CpiMsg customCatch(CpiMsg msg) {
+CpiMsg bus2(CpiMsg msg) {
 	msg
 }
+
+CpiMsg bus3(CpiMsg msg) {
+	msg
+}
+

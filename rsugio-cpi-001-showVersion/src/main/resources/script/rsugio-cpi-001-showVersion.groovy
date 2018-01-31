@@ -20,7 +20,7 @@ import groovy.transform.TypeCheckingMode
 CpiMsg r001showVersion(CpiMsg msg) {
 	Map<String,Object> ps = msg.properties
 	org.apache.camel.Exchange camelExch = msg.exchange
-	org.apache.camel.CamelContext camelCtx = camelExch.getContext()
+	org.apache.camel.CamelContext camelCtx = camelExch.context
 	org.osgi.framework.BundleContext osgiCtx = org.osgi.framework.FrameworkUtil.getBundle(msg.class).bundleContext
 	String ccts = ps.CamelCreatedTimestamp.format("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
 	com.sap.it.op.agent.mpl.MplConfiguration mpc = ps.SAP_MessageProcessingLogConfiguration	
@@ -45,7 +45,7 @@ CpiMsg r001showVersion(CpiMsg msg) {
 	
 	log << a
 	
-	log << "\n\nIFlow name:\t$camelCtx.name"
+	log << "\n\nIFlow id:\t$camelCtx.name"
 	log << "\nCamelExchange pattern:\t$camelExch.pattern"
 	log << "\nCamelCreatedTimestamp:\t$ccts"
 	log << "\nSAP_MessageProcessingLogID:\t$ps.SAP_MessageProcessingLogID\t\t//use it for navigation on MPLs. Somewhere it's MessageGuid"
@@ -55,14 +55,12 @@ CpiMsg r001showVersion(CpiMsg msg) {
 	log << "\nMessage.attachmentsSize:\t$msg.attachmentsSize"
 	log << "\nMessage.attachmentWrapperObjects:\t$msg.attachmentWrapperObjects"
 
-
 //	com.sap.it.op.mpl.impl.MessageProcessingLogChildPartImpl SAP_MessageProcessingLog = ps['SAP_MessageProcessingLog']
 //	log << "\n${SAP_MessageProcessingLog.getClass()}"
 
 	//JFY
 	log << "\n\nMPLactive:\t${ps.SAP_MessageProcessingLogConfiguration.mplActive}"
 	log << "\nMPLlevel:\t${ps.SAP_MessageProcessingLogConfiguration.logLevel}"
-
 
 	log << "\n\n"<<"-"*100
 	ps.each{String k, Object v ->
@@ -108,9 +106,12 @@ CpiMsg r001showVersionReflection(CpiMsg msg) {
 	log << "\n@see https://github.com/rsugio/cpi/tree/master/rsugio-cpi-001-showVersion\n"
     log << "\nJava version:\t${System.properties['java.version']}"
     log << "\nGroovy version:\t${GroovySystem.version}"
-//	log << "\nCamel version:\t$camelCtx.version"
-//	log << "\nCamel uptime:\t$camelCtx.uptime"
-//	log << "\nIFLMAP node:\t$iflmapNode"
+	org.apache.camel.Exchange camelExch = msg.exchange
+	org.apache.camel.CamelContext camelCtx = camelExch.context
+
+	log << "\n\nIFlow id:\t$camelCtx.name"
+	String ccts = msg.properties.CamelCreatedTimestamp.format("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+	log << "\nCamelCreatedTimestamp:\t$ccts"
 
 	msg.setBody(log as String)
 	msg.setHeader('Content-Type', 'text/plain;charset=UTF-8')
