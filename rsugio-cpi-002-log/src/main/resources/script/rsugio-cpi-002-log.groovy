@@ -37,15 +37,27 @@ CpiMsg mplCatch(CpiMsg msg) {
 	msg
 }
 
+CpiMsg customCatch(CpiMsg msg) {
+	Exception e = msg.properties.CamelExceptionCaught
+	msg.setBody(e.toString())
+	msg
+}
+
 CpiMsg bus1(CpiMsg msg) {
+	def r2d2 = msg.properties.log002
+	r2d2.appendTempFile("bus1", "bus1")
 	msg
 }
 
 CpiMsg bus2(CpiMsg msg) {
+	def r2d2 = msg.properties.log002
+	r2d2.appendTempFile("bus2", "bus2")
 	msg
 }
 
 CpiMsg bus3(CpiMsg msg) {
+	def r2d2 = msg.properties.log002
+	r2d2.appendTempFile("bus3", "bus3")
 	msg
 }
 

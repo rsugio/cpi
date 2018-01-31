@@ -5,6 +5,7 @@ import com.jcraft.jsch.SftpException
 
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
@@ -78,6 +79,15 @@ class Rsug002log {
         tempFiles[fn] = tmp
     }
 
+    public void appendTempFile(String fn, String cnt) throws IOException {
+        Path p = tempFiles[fn]
+        if (!p) p = createTempFile(fn)
+        OutputStream os = Files.newOutputStream(p, StandardOpenOption.APPEND)
+        os.write(cnt.getBytes("UTF-8"))
+        os.flush()
+        os.close()
+    }
+
     public void tempToArchive(String archive) throws IOException {
         assert connectedSftp
         if (!connectedSftp) throw new RuntimeException("Not connected to SFTP")
@@ -100,7 +110,7 @@ class Rsug002log {
 }
 
 Object r002sftp(Object msg) {
-    assert msg && msg.getClass() == Class.forName("com.sap.gateway.ip.core.customdev.util.Message")
+    assert msg  //& msg.getClass() == Class.forName("com.sap.gateway.ip.core.customdev.util.Message")
     String host_sftp = msg.properties.Host_Sftp
     String uc_sftp = msg.properties.Credential_Sftp
     if (!host_sftp)
@@ -109,8 +119,8 @@ Object r002sftp(Object msg) {
         throw new RuntimeException("Property Credential_Sftp is not set")
     Class itApiFactory = Class.forName("com.sap.it.api.ITApiFactory")
     Class secureStoreService = Class.forName("com.sap.it.api.securestore.SecureStoreService")
-    Class keystoreService = Class.forName("com.sap.it.api.keystore.KeystoreService")
-    Class userCredential = Class.forName("com.sap.it.api.securestore.UserCredential")
+//    Class keystoreService = Class.forName("com.sap.it.api.keystore.KeystoreService")
+//    Class userCredential = Class.forName("com.sap.it.api.securestore.UserCredential")
     def sss = itApiFactory.getApi(secureStoreService, null)
     def uc = sss.getUserCredential(uc_sftp)
 
@@ -121,26 +131,28 @@ Object r002sftp(Object msg) {
     String tenantName = System.properties['com.sap.it.node.tenant.name']
 
     Rsug002log r2d2 = new Rsug002log()
+    msg.properties.log002 = r2d2
     r2d2.connectSftp(host_sftp, uc, false)
     String dir_sftp = msg.properties.Directory_Sftp
     String dir = "/outgoing/$tenantName/$iflowId"
     r2d2.mkdirCdSftp(dir)
-    msg.properties.log002 = r2d2
-    msg.properties.log002name = "${ccts}_${messageId}.zip" as String
+    msg.properties.log002name = "${ccts}___${messageId}.zip" as String
+    r2d2.appendTempFile("index.txt", "\n\n" + " "*1000)
     msg
 }
 
 Object r002finish(Object msg) {
-    assert msg && msg.getClass() == Class.forName("com.sap.gateway.ip.core.customdev.util.Message")
-    String name = msg.properties.log002name
+    assert msg // && msg.getClass() == Class.forName("com.sap.gateway.ip.core.customdev.util.Message")
     Rsug002log r2d2 = msg.properties.log002
     if (!r2d2)
         throw new RuntimeException("No property `log002` set")
     else {
         if (r2d2.connectedSftp) {
-            r2d2.tempToArchive(name)
+            r2d2.appendTempFile("index.txt", "\n\n" + "."*1000)
+            r2d2.tempToArchive(msg.properties.log002name as String)
             r2d2.disconnectSftp()
-        }
+        } else
+            throw new RuntimeException("Not connected to SFTP")
     }
     msg
 }

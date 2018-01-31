@@ -1,5 +1,5 @@
 #Parameter data and values
-#Wed Jan 31 23:10:00 SAMT 2018
+#Thu Feb 01 00:47:39 SAMT 2018
 Endpoint_PostmanMpl=/rsugio-cpi/002-log/mpl
 Directory_Sftp=/outgoing/cpi
 Credential_Sftp=r2d2
