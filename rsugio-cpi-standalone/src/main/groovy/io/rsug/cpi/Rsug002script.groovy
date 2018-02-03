@@ -14,13 +14,84 @@ class Rsug002log {
     private com.jcraft.jsch.JSch jsch = null
     private com.jcraft.jsch.Session session = null
     private com.jcraft.jsch.ChannelSftp sftp = null
+    synchronized int httpRespCount = 1
     private Map<String, Path> tempFiles = [:]
+
+    public String mpl(def msg) {
+        def log = "\u0474\u2697"*20<<""
+        def Map<String,Object> ps = msg.properties
+        org.apache.camel.Exchange camelExch = msg.exchange
+        org.apache.camel.CamelContext camelCtx = camelExch.context
+        def osgiCtx = org.osgi.framework.FrameworkUtil.getBundle(msg.class).bundleContext
+        String ccts = ps.CamelCreatedTimestamp.format("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+        def mpc = ps.SAP_MessageProcessingLogConfiguration
+        String iflmapNode = camelExch.exchangeId.split("-")[1]
+
+        log << "\nJava version:\t${System.properties['java.version']}"
+        log << "\nGroovy version:\t${GroovySystem.version}"
+        log << "\nCamel version:\t$camelCtx.version"
+        log << "\nCamel uptime:\t$camelCtx.uptime"
+        log << "\nIFLMAP node:\t$iflmapNode"
+        log << "\ncom.sap.it.node.tenant.name:\t${System.properties['com.sap.it.node.tenant.name']}"
+        log << "\ncom.sap.it.node.tenant.id:\t${System.properties['com.sap.it.node.tenant.id']}"
+        log << "\ncom.sap.it.node.vmsize:\t${System.properties['com.sap.it.node.vmsize']}"
+
+        log << "\n\nIFlow id:\t$camelCtx.name"
+        log << "\nCamelExchange pattern:\t$camelExch.pattern"
+        log << "\nCamelCreatedTimestamp:\t$ccts"
+        log << "\nSAP_MessageProcessingLogID:\t$ps.SAP_MessageProcessingLogID\t\t//use it for navigation on MPLs. Somewhere it's MessageGuid"
+
+        //JFY
+        log << "\n\nMPLactive:\t${ps.SAP_MessageProcessingLogConfiguration.mplActive}"
+        log << "\nMPLlevel:\t${ps.SAP_MessageProcessingLogConfiguration.logLevel}"
+
+        log << "\n\n"<<"-"*100
+        ps.each{String k, Object v ->
+            log << "\nCpiMsgProperty\t$k = $v"
+        }
+//	log << "\n$ps.SAP_MessageProcessingLogConfiguration"
+        log << "\n\n\n\nSystemEnvironment\t${System.getenv()}"
+        log << "\n\n\n\nSystemProperties\t${System.properties}"
+        log << "\n\n\n\norg.apache.camel.Exchange\t$camelExch"
+        camelExch.properties.each{String p, Object r -> "\nCamelExchangeProperty $p = $r" }
+
+        log << "\n\n\n\norg.apache.camel.CamelContext\t$camelCtx"
+        log << "\nCamelContext.Status = ${camelCtx.getStatus()}"
+        log << "\nCamelContext.DataFormats = ${camelCtx.getDataFormats()}"
+        log << "\nCamelContext.DataFormatResolver = ${camelCtx.getDataFormatResolver()}"
+        log << "\nCamelContext.ManagementName = ${camelCtx.getManagementName()}"
+        log << "\nCamelContext.LanguageNames = ${camelCtx.getLanguageNames()}"
+        log << "\nCamelContext.InflightRepository = ${camelCtx.getInflightRepository()}"
+        log << "\nCamelContext.ClassLoader = ${camelCtx.getApplicationContextClassLoader()}"
+        log << "\nCamelContext.ComponentNames = ${camelCtx.getComponentNames()}"
+        log << "\nCamelContext.Endpoints = ${camelCtx.getEndpoints()}"
+        log << "\nCamelContext.EndpointMap = ${camelCtx.getEndpointMap()}"
+        log << "\nCamelContext.RouteDefinitions = ${camelCtx.routeDefinitions}"
+        log << "\nCamelContext.Routes = ${camelCtx.routes}"
+        camelCtx.getProperties().each{String p, Object r -> "\nCamelContextProperty $p = $r" }
+
+        log << "\n\n\n\norg.osgi.framework.BundleContext\t${osgiCtx}"
+        osgiCtx.bundles.each{org.osgi.framework.Bundle b ->
+            log << "\n[$b.bundleId] $b.symbolicName\t$b.location\t$b.version\t\t\tstate=$b.state"
+            if (b.symbolicName==camelCtx.name) {
+                log << "\n................................................................................"
+                Dictionary<String,String> d = b.headers
+                d.keys().each{k->
+                    String v = d.get(k)
+                    log << "\n $k = $v"
+                }
+                log << "\n................................................................................"
+            }
+        }
+
+        log as String
+    }
 
     public void connectSftp(String host_sftp, Object cpiCred, boolean ignoreSSL = false) throws IOException {
         assert cpiCred != null
         assert cpiCred.getClass().getCanonicalName().startsWith('com.sap.it.api.')
-        String uname = cpiCred.getUsername()
-        char[] password = cpiCred.getPassword()
+        String uname = cpiCred.username
+        char[] password = cpiCred.password
         byte[] pb = String.valueOf(password).getBytes()
         connectSftp(host_sftp, uname, pb, ignoreSSL)
     }
@@ -88,6 +159,16 @@ class Rsug002log {
         os.close()
     }
 
+    public void logHttpResponse(def headers, def response) throws IOException {
+        def log = "\u0474\u2697"*20<<""
+        headers.each{k,v->
+            log << "\n$k: $v"
+        }
+        log << "\n\n$response"
+        putSftp("http_response_${httpRespCount}.txt" as String, log as String, true)
+        httpRespCount++
+    }
+
     public void tempToArchive(String archive) throws IOException {
         assert connectedSftp
         if (!connectedSftp) throw new RuntimeException("Not connected to SFTP")
@@ -96,11 +177,12 @@ class Rsug002log {
         Iterator<Map.Entry<String,Path>> zz = tempFiles.iterator()
         while(zz.hasNext()) {
             Map.Entry<String,Path> x = zz.next()
-            assert Files.isRegularFile(x.value)
             ZipEntry ze = new ZipEntry(x.key)
             z.putNextEntry(ze)
-            org.apache.commons.io.IOUtils.copy(Files.newInputStream(x.value), z)
-            Files.delete(x.value)
+            if (Files.isRegularFile(x.value)) {
+                org.apache.commons.io.IOUtils.copy(Files.newInputStream(x.value), z)
+                Files.delete(x.value)
+            }
             z.closeEntry()
             z.flush()
         }
@@ -134,10 +216,10 @@ Object r002sftp(Object msg) {
     msg.properties.log002 = r2d2
     r2d2.connectSftp(host_sftp, uc, false)
     String dir_sftp = msg.properties.Directory_Sftp
-    String dir = "/outgoing/$tenantName/$iflowId"
+    String dir = "/outgoing/$tenantName/$iflowId/$ccts"
     r2d2.mkdirCdSftp(dir)
     msg.properties.log002name = "${ccts}___${messageId}.zip" as String
-    r2d2.appendTempFile("index.txt", "\n\n" + " "*1000)
+    r2d2.appendTempFile("mpl.txt", r2d2.mpl(msg))
     msg
 }
 
@@ -148,7 +230,7 @@ Object r002finish(Object msg) {
         throw new RuntimeException("No property `log002` set")
     else {
         if (r2d2.connectedSftp) {
-            r2d2.appendTempFile("index.txt", "\n\n" + "."*1000)
+//            r2d2.appendTempFile("index.txt", "\n\n" + "."*1000)
             r2d2.tempToArchive(msg.properties.log002name as String)
             r2d2.disconnectSftp()
         } else

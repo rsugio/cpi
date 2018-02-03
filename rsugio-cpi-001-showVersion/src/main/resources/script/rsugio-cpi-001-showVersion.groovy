@@ -90,8 +90,15 @@ CpiMsg r001showVersion(CpiMsg msg) {
     log << "\n\n\n\norg.osgi.framework.BundleContext\t${osgiCtx}"
 	osgiCtx.bundles.each{org.osgi.framework.Bundle b ->
 	    log << "\n[$b.bundleId] $b.symbolicName\t$b.location\t$b.version\t\t\tstate=$b.state"
-//	    String bn = b.headers.get('Bundle-Name')
-//	    log << "\nBundle-Name=$bn"
+        if (b.symbolicName==camelCtx.name) {
+            log << "\n................................................................................"
+            Dictionary<String,String> d = b.headers
+            d.keys().each{k->
+                String v = d.get(k)
+                log << "\n $k = $v"
+            }
+            log << "\n................................................................................"
+        }
 	}
 
 	msg.setBody(log as String)
