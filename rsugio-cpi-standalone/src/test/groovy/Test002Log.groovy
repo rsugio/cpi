@@ -34,6 +34,17 @@ class Test002Log {
     }
 
     @Test
+    void throughSFTP2() {
+        Rsug002log logger = new Rsug002log()
+        logger.connectSftp(sftp18.sftp_host, sftp18.sftp_uname, sftp18.sftp_pwd.bytes, false)
+        logger.mkdirCdSftp("/outgoing/test")
+        logger.putSftp("file1.txt", "СодержимоеУникод")
+        logger.putSftp("file2.txt", "СодержимоеУникод-2")
+        logger.filesToArchive("archive.zip")
+        logger.disconnectSftp()
+    }
+
+    @Test
     void throughTempFile() {
         Rsug002log logger = new Rsug002log()
         Object x = logger.createTempFile("1_.txt")
@@ -72,12 +83,5 @@ class Test002Log {
         directoryStream.each {
             println it
         }
-//        java.nio.file.Files.list(p).each{
-//            String n = it.fileName.toString()
-//            if (n.startsWith("a_") && n.endsWith(".txt")) {
-//                java.nio.file.Files.delete(it)
-//                println it
-//            }
-//        }
     }
 }

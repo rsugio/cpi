@@ -2,22 +2,36 @@ package io.rsug.cpi
 
 import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.SftpException
+import com.sap.gateway.ip.core.customdev.util.Message as CpiMsg
 
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
 class Rsug002log {
-    private boolean connectedSftp = false, useTempFiles = false
+    private boolean connectedSftp = false
+    private boolean logHttp = false
     private com.jcraft.jsch.JSch jsch = null
     private com.jcraft.jsch.Session session = null
     private com.jcraft.jsch.ChannelSftp sftp = null
     synchronized int httpRespCount = 1
     private Map<String, Path> tempFiles = [:]
+    private List<Path> sftpFiles = []
+    private String cwd = null
 
-    public String mpl(def msg) {
+    Rsug002log() {
+        logHttp = false
+    }
+
+    Rsug002log(CpiMsg msg) {
+        def mpc = msg.properties.SAP_MessageProcessingLogConfiguration
+        logHttp = mpc.logLevel.toString() in ['DEBUG', 'TRACE']
+    }
+
+    public String mpl(CpiMsg msg) {
         def log = "\u0474\u2697"*20<<""
         def Map<String,Object> ps = msg.properties
         org.apache.camel.Exchange camelExch = msg.exchange
@@ -129,6 +143,7 @@ class Rsug002log {
                 sftp.cd(dir)
             }
         }
+        cwd = dir
     }
 
     public void putSftp(String name, String content, boolean append = true) throws SftpException {
@@ -142,6 +157,7 @@ class Rsug002log {
         w.write(content)
         w.flush()
         w.close()
+        sftpFiles.add(Paths.get(cwd, name))
     }
 
     public Path createTempFile(String fn) throws IOException {
@@ -160,6 +176,7 @@ class Rsug002log {
     }
 
     public void logHttpResponse(def headers, def response) throws IOException {
+        if (!logHttp) return
         def log = "\u0474\u2697"*20<<""
         headers.each{k,v->
             log << "\n$k: $v"
@@ -167,6 +184,31 @@ class Rsug002log {
         log << "\n\n$response"
         putSftp("http_response_${httpRespCount}.txt" as String, log as String, true)
         httpRespCount++
+    }
+
+    public void logHttpResponse(CpiMsg msg) throws IOException {
+        if (!logHttp) return
+        logHttpResponse(msg.headers, msg.getBody(String))
+    }
+
+    public void filesToArchive(String archive) throws IOException {
+        assert connectedSftp
+        if (!connectedSftp) throw new RuntimeException("Not connected to SFTP")
+        OutputStream w = sftp.put(archive, ChannelSftp.OVERWRITE)
+        ZipOutputStream z = new ZipOutputStream(w)
+        Iterator<Path> zz = sftpFiles.iterator()
+        while(zz.hasNext()) {
+            Path x = zz.next()
+            String fn = x.fileName
+            println "$x $fn"
+            ZipEntry ze = new ZipEntry(fn)
+            z.putNextEntry(ze)
+            org.apache.commons.io.IOUtils.copy(sftp.get(fn), z)
+            z.closeEntry()
+            z.flush()
+        }
+        z.close()
+        w.close()
     }
 
     public void tempToArchive(String archive) throws IOException {
@@ -191,7 +233,7 @@ class Rsug002log {
     }
 }
 
-Object r002sftp(Object msg) {
+CpiMsg r002sftp(CpiMsg msg) {
     assert msg  //& msg.getClass() == Class.forName("com.sap.gateway.ip.core.customdev.util.Message")
     String host_sftp = msg.properties.Host_Sftp
     String uc_sftp = msg.properties.Credential_Sftp
@@ -212,29 +254,31 @@ Object r002sftp(Object msg) {
     String ccts = msg.properties.CamelCreatedTimestamp.format("yyyy-MM-dd'T'HH.mm.ss.SSSXXX")
     String tenantName = System.properties['com.sap.it.node.tenant.name']
 
-    Rsug002log r2d2 = new Rsug002log()
+    Rsug002log r2d2 = new Rsug002log(msg)
     msg.properties.log002 = r2d2
     r2d2.connectSftp(host_sftp, uc, false)
-    String dir_sftp = msg.properties.Directory_Sftp
-    String dir = "/outgoing/$tenantName/$iflowId/$ccts"
+    String fmt = msg.properties.Directory_Sftp ?: '/outgoing/%1$s/%2$s/%3$s'
+    String dir = String.format(fmt, tenantName, iflowId, ccts)
     r2d2.mkdirCdSftp(dir)
     msg.properties.log002name = "${ccts}___${messageId}.zip" as String
-    r2d2.appendTempFile("mpl.txt", r2d2.mpl(msg))
+    r2d2.putSftp ("mpl.txt", r2d2.mpl(msg))
     msg
 }
 
-Object r002finish(Object msg) {
+CpiMsg r002finish(CpiMsg msg) {
     assert msg // && msg.getClass() == Class.forName("com.sap.gateway.ip.core.customdev.util.Message")
     Rsug002log r2d2 = msg.properties.log002
     if (!r2d2)
         throw new RuntimeException("No property `log002` set")
     else {
+        Exception exc = msg.properties.CamelExceptionCaught
         if (r2d2.connectedSftp) {
-//            r2d2.appendTempFile("index.txt", "\n\n" + "."*1000)
-            r2d2.tempToArchive(msg.properties.log002name as String)
+//            r2d2.filesToArchive(msg.properties.log002name as String)
             r2d2.disconnectSftp()
         } else
             throw new RuntimeException("Not connected to SFTP")
     }
     msg
 }
+
+

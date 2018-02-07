@@ -43,21 +43,26 @@ CpiMsg customCatch(CpiMsg msg) {
 	msg
 }
 
+CpiMsg bus0(CpiMsg msg) {
+	msg.properties.log002.putSftp("bus0", "bus0")
+	msg
+}
+
 CpiMsg bus1(CpiMsg msg) {
-	def r2d2 = msg.properties.log002
-	r2d2.appendTempFile("bus1", "bus1")
+	msg.properties.log002.logHttpResponse(msg)
+	msg.properties.log002.putSftp("bus1", "bus1")
 	msg
 }
 
 CpiMsg bus2(CpiMsg msg) {
-	def r2d2 = msg.properties.log002
-	r2d2.appendTempFile("bus2", "bus2")
+	msg.properties.log002.logHttpResponse(msg)
+	msg.properties.log002.putSftp("bus2", "bus2")
 	msg
 }
 
 CpiMsg bus3(CpiMsg msg) {
-	def r2d2 = msg.properties.log002
-	r2d2.appendTempFile("bus3", "bus3")
+	msg.properties.log002.logHttpResponse(msg)
+	msg.properties.log002.putSftp("bus3", "bus3")
 	msg
 }
 
