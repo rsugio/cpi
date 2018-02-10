@@ -141,7 +141,7 @@
       </ifl:property>
       <ifl:property>
         <key>transactionalHandling</key>
-        <value>Required</value>
+        <value>Not Required</value>
       </ifl:property>
     </bpmn2:extensionElements>
     <bpmn2:startEvent id="StartEvent_1" name="Start">

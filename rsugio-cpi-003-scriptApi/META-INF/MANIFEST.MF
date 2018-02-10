@@ -73,4 +73,5 @@ Import-Package: com.sap.esb.application.services.cxf.interceptor,
  com.sap.aii.mappingtool.tfapi,
  com.sap.esb.webservice.audit.log
 Import-Service: com.sap.esb.webservice.audit.log.AuditLogger 
+Bundle-Vendor: io.rsug
  
