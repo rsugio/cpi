@@ -34,4 +34,16 @@ class TestGroovy {
         frm.format("%s/%s/%s", 1, 2, 3, 4, 5, 6)
         println sb
     }
+
+    @Test
+    void sleep1() {
+        int seconds = 12
+        long b = Date.getMillisOf(new Date())
+        long e = b
+        while (e - b < seconds * 1000) {
+            Thread.sleep(100)
+            e = Date.getMillisOf(new Date())
+        }
+
+    }
 }
