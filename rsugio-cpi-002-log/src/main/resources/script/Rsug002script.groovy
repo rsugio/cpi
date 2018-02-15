@@ -1,5 +1,15 @@
 package io.rsug.cpi
 
+/**
+ * Some logging technics for CPI IFlow
+ *
+ * @author Iliya Kuznetsov <iliya.kuznetsov@gmail.com>
+ * @version 1.0.2
+ * @date 2018-02-15
+ * @see https://github.com/rsugio/cpi/tree/master/rsugio-cpi-002-log
+ */
+
+
 import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.SftpException
 import com.sap.gateway.ip.core.customdev.util.Message as CpiMsg
@@ -147,7 +157,7 @@ class Rsug002log {
     }
 
     public void putSftp(String name, String content, boolean append = true) throws SftpException {
-        putSftp(name, content.bytes, append)
+        putSftp(name, content.getBytes("UTF-8"), append)
     }
 
     public void putSftp(String name, byte[] content, boolean append = true) throws SftpException {

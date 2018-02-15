@@ -1,9 +1,9 @@
 /**
- * Some logging technics
+ * Some logging technics for CPI IFlow
  *
  * @author Iliya Kuznetsov <iliya.kuznetsov@gmail.com>
- * @version 1.0.1
- * @date 2018-01-27
+ * @version 1.0.2
+ * @date 2018-02-15
  * @see https://github.com/rsugio/cpi/tree/master/rsugio-cpi-002-log
  */
 
@@ -44,25 +44,25 @@ CpiMsg customCatch(CpiMsg msg) {
 }
 
 CpiMsg bus0(CpiMsg msg) {
-	msg.properties.log002.putSftp("bus0", "bus0")
+	msg.properties.log002.putSftp("bus0", msg.properties.bus0)
 	msg
 }
 
 CpiMsg bus1(CpiMsg msg) {
 	msg.properties.log002.logHttpResponse(msg)
-	msg.properties.log002.putSftp("bus1", "bus1")
+	msg.properties.log002.putSftp("bus1", msg.properties.bus1)
 	msg
 }
 
 CpiMsg bus2(CpiMsg msg) {
 	msg.properties.log002.logHttpResponse(msg)
-	msg.properties.log002.putSftp("bus2", "bus2")
+	msg.properties.log002.putSftp("bus2", msg.properties.bus2)
 	msg
 }
 
 CpiMsg bus3(CpiMsg msg) {
 	msg.properties.log002.logHttpResponse(msg)
-	msg.properties.log002.putSftp("bus3", "bus3")
+	msg.properties.log002.putSftp("bus3", msg.properties.bus3)
 	msg
 }
 
