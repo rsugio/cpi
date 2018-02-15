@@ -5,7 +5,10 @@ SAP-NodeType: IFLMAP
 SAP-RuntimeProfile: iflmap
 Bundle-Name: rsugio-cpi-003-scriptApi
 Bundle-SymbolicName: rsugio-cpi-003-scriptApi; singleton:=true
-Bundle-Version: 1.0.0
+Bundle-Version: 1.0.1
+Bundle-Vendor: rsug.io
+Bundle-Description: https://github.com/rsugio/cpi/tree/master/rsugio-cpi-003-scriptApi
+Bundle-ManifestVersion: 2
 Import-Package: com.sap.esb.application.services.cxf.interceptor,
  com.sap.esb.security,
  com.sap.it.op.agent.api,
@@ -72,6 +75,6 @@ Import-Package: com.sap.esb.application.services.cxf.interceptor,
  com.sap.aii.mappingtool.tf7.rt,
  com.sap.aii.mappingtool.tfapi,
  com.sap.esb.webservice.audit.log
-Import-Service: com.sap.esb.webservice.audit.log.AuditLogger 
-Bundle-Vendor: io.rsug
- 
+Import-Service: com.sap.esb.webservice.audit.log.AuditLogger
+
+

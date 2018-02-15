@@ -68,4 +68,3 @@ CpiMsg r003scriptApiReflection(CpiMsg msg) {
 	msg.setBody(log as String)	
 	msg                                
 }
-

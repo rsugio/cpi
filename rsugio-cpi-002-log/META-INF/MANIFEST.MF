@@ -6,6 +6,8 @@ SAP-RuntimeProfile: iflmap
 Bundle-Name: rsugio-cpi-002-log
 Bundle-SymbolicName: rsugio-cpi-002-log; singleton:=true
 Bundle-Version: 1.0.2
+Bundle-Vendor: rsug.io
+Bundle-Description: https://github.com/rsugio/cpi/tree/master/rsugio-cpi-002-log 
 Import-Package: com.sap.esb.application.services.cxf.interceptor,
  com.sap.esb.security,
  com.sap.it.op.agent.api,
@@ -73,5 +75,3 @@ Import-Package: com.sap.esb.application.services.cxf.interceptor,
  com.sap.aii.mappingtool.tfapi,
  com.sap.esb.webservice.audit.log
 Import-Service: com.sap.esb.webservice.audit.log.AuditLogger 
-Bundle-Vendor: rsug.io
-Bundle-Description: https://github.com/rsugio/cpi/tree/master/rsugio-cpi-002-log 

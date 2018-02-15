@@ -3,7 +3,9 @@ SAP-RuntimeProfile: iflmap
 Bundle-Description: 
 Bundle-SymbolicName: rsugio-cpi-001-showVersion;singleton:=true
 Bundle-Name: rsugio-cpi-001-showVersion
-Bundle-Version: 1.0.1
+Bundle-Version: 1.0.2
+Bundle-Vendor: rsug.io
+Bundle-Description: https://github.com/rsugio/cpi/tree/master/rsugio-cpi-001-showVersion
 Bundle-ManifestVersion: 2
 SAP-NodeType: IFLMAP
 Import-Package: com.sap.esb.application.services.cxf.interceptor,com.s
