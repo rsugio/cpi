@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: rsugiobean-test006
+Bundle-SymbolicName: rsugiobean-test006
+Bundle-Vendor: rsug.io
+Bundle-Version: 0.0.1
+Export-Package: rsugiobean;uses:="org.apache.camel";version="0.0.1"
+Import-Package: org.apache.camel;version="[2.17,3)"
