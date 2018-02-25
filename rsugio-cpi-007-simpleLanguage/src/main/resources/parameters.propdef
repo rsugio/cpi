@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<parameters><parameter><key></key><name>Externalized</name><type>xsd:string</type><isRequired>false</isRequired><constraint></constraint><description></description></parameter><parameter><key></key><name>Endpoint_Postman</name><type>xsd:string</type><isRequired>false</isRequired><constraint></constraint><description></description></parameter><parameter><key></key><name>izh</name><type>xsd:string</type><isRequired>false</isRequired><constraint></constraint><description></description></parameter></parameters>
