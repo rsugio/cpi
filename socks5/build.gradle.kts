@@ -1,5 +1,4 @@
 plugins {
-    java
     `java-library`
 }
 
@@ -11,9 +10,21 @@ repositories {
 }
 
 dependencies {
+    compileOnly("org.jetbrains", "annotations", "19+")
     testImplementation("junit", "junit", "4.12")
 }
 
 configure<JavaPluginConvention> {
     sourceCompatibility = JavaVersion.VERSION_1_8
+}
+
+tasks.jar {
+    manifest {
+        attributes(
+                mapOf("Main-Class" to "Main",
+                        "Implementation-Title" to project.name,
+                        "Implementation-Version" to project.version,
+                        "Comment" to "Русские буквы, привет юникод")
+        )
+    }
 }
