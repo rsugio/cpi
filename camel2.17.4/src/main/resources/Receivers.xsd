@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://sap.com/xi/XI/System" xmlns="http://sap.com/xi/XI/System"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:element name="Receivers" type="Receivers"/>
+    <xsd:simpleType name="PartyValue">
+        <xsd:annotation>
+            <xsd:appinfo source="http://sap.com/xi/VersionID"
+                >71d4aaa30d0211dbcca1001321697f5b</xsd:appinfo>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="60"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:complexType name="Receivers">
+        <xsd:annotation>
+            <xsd:appinfo source="http://sap.com/xi/VersionID"
+                >dec285230d0111dbacf0001321697f5b</xsd:appinfo>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="Receiver" type="Receiver" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="Receiver">
+        <xsd:annotation>
+            <xsd:appinfo source="http://sap.com/xi/VersionID"
+                >1890cc830d0211dbbf3c001321697f5b</xsd:appinfo>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="Party" type="Party" minOccurs="0"/>
+            <xsd:element name="Service">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:string">
+                        <xsd:maxLength value="60"/>
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="Party">
+        <xsd:annotation>
+            <xsd:appinfo source="http://sap.com/xi/VersionID"
+                >2cac32e10d0211dbb548001321697f5b</xsd:appinfo>
+        </xsd:annotation>
+        <xsd:simpleContent>
+            <xsd:extension base="PartyValue">
+                <xsd:attribute name="agency">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:maxLength value="120"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+                <xsd:attribute name="scheme">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:maxLength value="120"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+</xsd:schema>
